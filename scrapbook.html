@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #f5e6d3;
+      font-family: 'Arial', sans-serif;
+    }
+    
+    .book-container {
+      position: relative;
+      width: 900px;
+      height: 500px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .book {
+      width: 800px;
+      height: 500px;
+      position: relative;
+      transform-style: preserve-3d;
+    }
+    
+    .page {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      transition: transform 1s ease-in-out;
+      transform-style: preserve-3d;
+      transform-origin: left;
+      background: #fff9f0;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      border-radius: 0 3px 3px 0;
+      display: none;
+    }
+    
+    .page.active {
+      display: block;
+    }
+    
+    .cover {
+      background: #8b4513;
+      padding: 20px;
+      color: #f5e6d3;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border: 2px solid #613009;
+    }
+    
+    .cover h1 {
+      font-size: 2.5em;
+      margin-bottom: 20px;
+      font-family: 'Times New Roman', serif;
+    }
+    
+    .page-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      height: 100%;
+      padding: 30px;
+      gap: 20px;
+      box-sizing: border-box;
+    }
+    
+    .photo-side {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      background: #fff;
+      padding: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .text-side {
+      padding: 20px;
+      font-size: 1.1em;
+      line-height: 1.6;
+      color: #4a4a4a;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    
+    .photo-slot img {
+      max-width: 100%;
+      max-height: 300px;
+      object-fit: cover;
+      border: 1px solid #d4c3b3;
+    }
+    
+    .washi-tape {
+      position: absolute;
+      width: 80px;
+      height: 20px;
+      background: rgba(255, 182, 193, 0.6);
+      transform: rotate(-45deg);
+      top: -5px;
+      left: -5px;
+    }
+    
+    .date {
+      font-style: italic;
+      color: #8b7355;
+      margin-bottom: 10px;
+    }
+    
+    .spine {
+      position: absolute;
+      left: 0;
+      width: 40px;
+      height: 100%;
+      background: #6b3510;
+      transform-origin: left;
+      border-radius: 3px 0 0 3px;
+    }
+
+    .nav-button {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(139, 69, 19, 0.8);
+      color: #fff;
+      border: none;
+      padding: 15px;
+      cursor: pointer;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      transition: background 0.3s;
+      z-index: 1000;
+    }
+
+    .nav-button:hover {
+      background: rgba(139, 69, 19, 1);
+    }
+
+    .prev-button {
+      left: -60px;
+    }
+
+    .next-button {
+      right: -60px;
+    }
+
+    .nav-button:disabled {
+      background: rgba(169, 169, 169, 0.8);
+      cursor: not-allowed;
+    }
+
+    .page-number {
+      position: absolute;
+      bottom: -30px;
+      width: 100%;
+      text-align: center;
+      color: #8b4513;
+      font-size: 1.1em;
+    }
+
+    @keyframes pageFlipForward {
+      0% { transform: rotateY(0deg); }
+      100% { transform: rotateY(-180deg); }
+    }
+
+    @keyframes pageFlipBackward {
+      0% { transform: rotateY(-180deg); }
+      100% { transform: rotateY(0deg); }
+    }
+
+    .flip-forward {
+      animation: pageFlipForward 1s ease-in-out;
+    }
+
+    .flip-backward {
+      animation: pageFlipBackward 1s ease-in-out;
+    }
+
+    .play-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(139, 69, 19, 0.9);
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(139, 69, 19, 0.9);
+      color: #fff;
+      border: none;
+      padding: 15px;
+      cursor: pointer;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      z-index: 1000; /* Hidden by default */
+    }
+    .play-button.active {
+      display: flex; /* Show when active */
+    }
+  </style>
+</head>
+<body>
+
+    <audio id="background-music" src="ssstik.io_1731048199393.mp3" loop></audio>
+    
+  <div class="book-container">
+    <button class="nav-button prev-button" onclick="prevPage()" disabled>←</button>
+    
+    <div class="book">
+      <div class="spine"></div>
+      
+      <div class="page cover active" id="page0">
+        <h1>HAIII BOCILLL</h1>
+        <p>I JUST LOVE</p>
+        <p>EVERYTHING ABOUT YOU</p>
+        <img src="4a2cb95a08eb5eea84d82a217da491e1.jpg"
+      </div>
+      
+      <div class="page" id="page1">
+        <div class="page-content">
+          <div class="photo-side">
+            <div class="washi-tape"></div>
+            <img src="WhatsApp Image 2024-11-09 at 21.56.28_67a14658.jpg" alt="Paris Journey">
+          </div>
+          <div class="text-side">
+            <div class="date"></div>
+            <h2></h2>
+            <p>Aku suka segala tentangmu, dulu aku pernah berpikir, mungkin aku tidak akan mendengar suaramu sebab aku begitu pemalu</p>
+            <p>Tapi tidak, nyatanya kamu pernah mengajakku berbicara, ya walaupun virtual kocak, meski kamu hanya bertanya tentang hal-hal yang tidak menjurus pada kita. Tidak bertanya tentang, "Apa kamu sudah makan?" atau "Bagaimana harimu?"</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="page" id="page2">
+        <div class="page-content">
+          <div class="photo-side">
+            <div class="washi-tape"></div>
+            <img src="WhatsApp Image 2024-11-09 at 21.48.29_e1388512.jpg" alt="Italian Escape">
+          </div>
+          <div class="text-side">
+            <div class="date"></div>
+            <h2></h2>
+            <p>Dibawah pohon yang rindang aku ingin denganmu seorang membicarakan apa saja; buku, prediksi cuaca BMKG, bunga kredit Bank BRI, update terkini harga miras lokal, kabar bola dunia, musik-musik terbaru dan apapun asalkan itu denganmu</p>
+            <p></p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="page" id="page3">
+        <div class="page-content">
+          <div class="photo-side">
+            <div class="washi-tape"></div>
+            <img src="WhatsApp Image 2024-11-09 at 21.52.48_17ac1fe9.jpg" alt="Greek Islands">
+          </div>
+          <div class="text-side">
+            <div class="date"></div>
+            <h2></h2>
+            <p>Aku tak keberatan menunggu lebih lama jika pada akhirnya
+                kau yang dipilih tuhan diakhir cerita
+            </p>
+            <p>Pergilah,
+                Bermainlah di banyak hati.
+                Berlabuhlah dibanyak tempat.
+            </p>
+            <p>Berpetualanglah sampai rasa penasaranmu habis,lalu
+                putuskan bahwa bersamaku adalah tujuan akhir dari semua
+                perjalanan panjang itu
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="page" id="page4">
+        <div class="page-content">
+          <div class="photo-side">
+            <div class="washi-tape"></div>
+            <img src="WhatsApp Image 2024-11-09 at 21.52.48_627bd4d8.jpg" alt="Greek Islands">
+          </div>
+          <div class="text-side">
+            <div class="date"></div>
+            <h2></h2>
+            <p>Bagian paling menyenangkan
+                dalam hidupku 
+                adalah mengenalmu
+            </p>
+            <p>Namun yang paling menyedihkan
+                Aku tak pernah kunjung bisa memilikimu
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="page" id="page5">
+        <div class="page-content">
+          <div class="photo-side">
+            <div class="washi-tape"></div>
+            <img src="WhatsApp Image 2024-11-09 at 21.52.47_c06ea62c.jpg" alt="Greek Islands">
+          </div>
+          <div class="text-side">
+            <div class="date">Nov 10, 2024</div>
+            <h2>I PROUD OF YOU</h2>
+            <p>Semoga hal-hal baik selalu beriringan denganmu, teruslah tumbuh,
+                aku akan melihatmu berproses dari jarak yang paling jauh,dan 
+                akan selalu jadi orang yang paling bangga di setiap prosesmu.
+            </p>
+            <p></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-number">Page <span id="currentPage">0</span> of 3</div>
+    </div>
+
+    <button class="nav-button next-button" onclick="nextPage()">→</button>
+  </div>
+
+  <button class="play-button" id="playButton" onclick="toggleMusic()">▶</button>
+
+  <script>
+    let currentPage = 0;
+    const totalPages = 6; // Including cover
+    const pages = document.querySelectorAll('.page');
+    const prevButton = document.querySelector('.prev-button');
+    const nextButton = document.querySelector('.next-button');
+    const pageNumberDisplay = document.getElementById('currentPage');
+
+    function updateButtons() {
+      prevButton.disabled = currentPage === 0;
+      nextButton.disabled = currentPage === totalPages - 1;
+      pageNumberDisplay.textContent = currentPage;
+    }
+
+    function showPage(pageNumber) {
+      pages.forEach((page, index) => {
+        if (index === pageNumber) {
+          page.classList.add('active');
+        } else {
+          page.classList.remove('active');
+        }
+      });
+    }
+
+    function nextPage() {
+      if (currentPage < totalPages - 1) {
+        const currentPageElement = pages[currentPage];
+        currentPageElement.classList.add('flip-forward');
+        
+        setTimeout(() => {
+          currentPageElement.classList.remove('active', 'flip-forward');
+          currentPage++;
+          showPage(currentPage);
+          updateButtons();
+        }, 500);
+      }
+    }
+
+    function prevPage() {
+      if (currentPage > 0) {
+        const previousPageElement = pages[currentPage - 1];
+        previousPageElement.classList.add('active', 'flip-backward');
+        
+        setTimeout(() => {
+          pages[currentPage].classList.remove('active');
+          previousPageElement.classList.remove('flip-backward');
+          currentPage--;
+          updateButtons();
+        }, 500);
+      }
+    }
+
+    // Initialize
+    updateButtons();
+
+    const audio = document.getElementById('background-music');
+    const playButton = document.getElementById('playButton');
+
+    // Function to attempt auto-playing music on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      audio.play().then(() => {
+        playButton.textContent = '⏸'; // Set icon to pause if autoplay works
+      }).catch(() => {
+        playButton.textContent = '▶'; // Set icon to play if autoplay is blocked
+      });
+    });
+
+    // Toggle play/pause functionality
+    function toggleMusic() {
+      if (audio.paused) {
+        audio.play().then(() => {
+          playButton.textContent = '⏸'; // Change icon to pause
+        }).catch(error => {
+          console.error('Playback failed:', error);
+        });
+      } else {
+        audio.pause();
+        playButton.textContent = '▶'; // Change icon back to play
+      }
+    }
+
+    // Keep play button visible and update text based on playback state
+    audio.addEventListener('play', () => {
+      playButton.textContent = '⏸';
+    });
+    audio.addEventListener('pause', () => {
+      playButton.textContent = '▶';
+    });
+  </script>
+</body>
+</html>
